@@ -1,0 +1,21 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: '0 8 */3 * *'  # toutes les 3 jours à 8h UTC
+  workflow_dispatch:         # déclenchement manuel si besoin
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://ibvbbgpfzjygumbhfdkw.supabase.co/rest/v1/users?select=id&limit=1" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlidmJiZ3Bmemp5Z3VtYmhmZGt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MjMxMzksImV4cCI6MjA5MzA5OTEzOX0.jlUkOO47DBgU7_INaPrreK4ip_7GSHcJHnlNX0DYhJY")
+          echo "Supabase ping status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "Attention : réponse inattendue ($STATUS)"
+            exit 1
+          fi
