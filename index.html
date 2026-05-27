@@ -1737,10 +1737,18 @@
         let usersList = [];
 
         async function loadUsersForLogin() {
-            const { data } = await sb.from('users').select('*').eq('actif', true).order('nom');
-            if (data) usersList = data;
+            const { data, error } = await sb.from('users').select('*').eq('actif', true).order('nom');
             const opts = document.getElementById('loginUserSelectOptions');
             opts.innerHTML = '';
+            if (error) {
+                const div = document.createElement('div');
+                div.className = 'cselect-opt';
+                div.style.color = '#ef4444';
+                div.textContent = '⚠️ Erreur : ' + error.message;
+                opts.appendChild(div);
+                return;
+            }
+            if (data) usersList = data;
             usersList.forEach(u => {
                 const div = document.createElement('div');
                 div.className = 'cselect-opt';
@@ -1934,8 +1942,13 @@
         }
 
         async function renderUsersList() {
-            const { data } = await sb.from('users').select('*').order('nom');
+            const { data, error } = await sb.from('users').select('*').order('nom');
             const container = document.getElementById('usersList');
+            if (error) {
+                container.innerHTML = '<div style="color:#ef4444;font-size:13px;padding:8px;">⚠️ Erreur de chargement : ' + error.message + '</div>';
+                document.getElementById('usersCount').textContent = '!';
+                return;
+            }
             document.getElementById('usersCount').textContent = data ? data.length : 0;
             if (!data || data.length === 0) {
                 container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px;">Aucun utilisateur</div>';
